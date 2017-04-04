@@ -36,7 +36,9 @@ int main(int argc, char** argv) {
 	local_b = local_a + local_n * h;
 	integral = calcula(local_a, local_b, local_n, h);
 	
-	MPI_Reduce(&integral, &total, p-1, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&integral, &total, 1, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+	printf("Process %d => local_n: %d \n", my_rank, local_n);
 
 	// if(my_rank == 0) {
 	// 	total = integral;
