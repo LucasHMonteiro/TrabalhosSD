@@ -13,7 +13,6 @@ int main(int argc, char **argv) {
     if (my_rank != 0) {
         sprintf(msg, "Processo %d está vivo !", my_rank); 
         destino = 0; 
-	sleep(1);
         MPI_Send(msg, strlen(msg) + 1, MPI_CHAR, destino, tag, MPI_COMM_WORLD); 
     } else { // if (my_rank == 0)
         for (origem = 1; origem < np; origem++) {
