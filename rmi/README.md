@@ -23,3 +23,7 @@ All commands:
 - `make run` will start the registry, the server, the client and stop them
 
 - `make` will build and run
+
+## Screenshot
+
+![Screenshot](img/screenshot.png?raw=true "Screenshot")
