@@ -7,44 +7,53 @@ start: registry.PID server.PID
 reboot: stop clean build start
 
 registry.PID:
-	@echo
 	@echo STARTING RMI REGISTRY
-	cd build && { rmiregistry & echo $$! > ../$@; }
+	@cd build && { rmiregistry & echo $$! > ../$@; }
 	@sleep 2
-	@echo
 
 server.PID: registry.PID
 	@echo STARTING PRIORITY SERVER
-	java -classpath build -Djava.rmi.server.codebase=file:build/ Server & echo $$! > $@
+	@java -classpath build -Djava.rmi.server.codebase=file:build/ Server & echo $$! > $@
 	@sleep 2
-	@echo
 
 client: server.PID
-	java -classpath build Client $(fk) $(ct)
+	@java -classpath build Client $(fk) $(ct) $(l)
 	@sleep 2
 
 stop:
 	@echo KILLING RMI REGISTRY
-	kill `cat registry.PID` && rm registry.PID
-	@echo
+	@kill `cat registry.PID` && rm registry.PID
 	
 	@echo KILLING RMI SERVER
-	kill `cat server.PID` && rm server.PID
-	@echo
+	@kill `cat server.PID` && rm server.PID
 
 build: Client.java Resource.java Server.java
-	mkdir build
-	javac -d build Client.java Resource.java Server.java
+	@echo BUILDING PROJECT
+	@mkdir build
+	@javac -d build Client.java Resource.java Server.java
 
 clean:
-	rm -R build
+	@echo CLEANING PROJECT
+	@rm -R build
 
-test:
-	make client fk=1 &
-	make client fk=1 ct=pepe1 &
-	make client fk=1 ct=pepe2 &
-	make client fk=1 ct=pepe3 &
-	make client fk=1 &
+test-parallel-write:
+	@make client fk=2 ct=content1 l=3 &
+	@make client fk=1 ct=content2 l=3 &
+
+test-read-priority:
+	@make client fk=1 ct=pepe1 l=1 &
+	@sleep 2
+	@echo
+	@make client fk=1 l=6 &
+	@sleep 2
+	@echo
+	@make client fk=1 ct=pepe2 l=2 &
+	@sleep 2
+	@echo
+	@make client fk=1 l=6 &
+	@sleep 10
+	@echo
+	@make client fk=1 l=6 &
 
 
 .PHONY: run start stop build clean client
