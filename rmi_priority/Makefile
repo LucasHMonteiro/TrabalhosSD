@@ -41,19 +41,16 @@ test-parallel-write:
 	@make client fk=1 ct=content2 l=3 &
 
 test-read-priority:
-	@make client fk=1 ct=pepe1 l=1 &
-	@sleep 2
+	@make client fk=1 ct=pepe1 l=11 &
+	@sleep 3
 	@echo
-	@make client fk=1 l=6 &
-	@sleep 2
+	@make client fk=1 l=18 &
+	@sleep 6
 	@echo
-	@make client fk=1 ct=pepe2 l=2 &
-	@sleep 2
+	@make client fk=1 ct=pepe2 l=6 &
+	@sleep 6
 	@echo
-	@make client fk=1 l=6 &
-	@sleep 10
-	@echo
-	@make client fk=1 l=6 &
+	@make client fk=1 l=18 &
 
 
 .PHONY: run start stop build clean client

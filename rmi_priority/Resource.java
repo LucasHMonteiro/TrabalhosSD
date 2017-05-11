@@ -7,7 +7,7 @@ public class Resource {
 	private Lock countersLock = new ReentrantLock();
 	private Object readersQueue = new Object();
 	private Object writersQueue = new Object();
-	private String file = "first line";
+	private String file = "";
 
 	public Resource(int id) {
 		this.id = id;
@@ -17,7 +17,7 @@ public class Resource {
 		countersLock.lock();
 
 		while (activeWriters > 0) {
-			this.log("waiting...");
+			this.log("waiting to read...");
 			waitingReaders++;
 			countersLock.unlock();
 			synchronized (readersQueue) {
@@ -60,7 +60,7 @@ public class Resource {
 		countersLock.lock();
 
 		while (activeReaders > 0 || waitingReaders > 0 || activeWriters > 0) {
-			this.log("waiting...");
+			this.log("waiting to write...");
 			waitingWriters++;
 			countersLock.unlock();
 			synchronized (writersQueue) {
@@ -75,7 +75,7 @@ public class Resource {
 		countersLock.unlock();
 
 		this.log("writing...");
-		file += "\n" + content;
+		file += content + "\n";
 		Thread.sleep(duration * 1000);
 		this.log("writing finished.");
 
