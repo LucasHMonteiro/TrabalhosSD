@@ -1,5 +1,7 @@
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.Scanner;
+import java.io.*;
 
 public class Resource {
 	private int id;
@@ -8,9 +10,11 @@ public class Resource {
 	private Object readersQueue = new Object();
 	private Object writersQueue = new Object();
 	private String file = "";
+	private String fileName;
 
 	public Resource(int id) {
 		this.id = id;
+		this.fileName = "resource"+this.id+".txt";
 	}
 
 	public String read(int duration) throws InterruptedException {
@@ -32,7 +36,12 @@ public class Resource {
 		countersLock.unlock();
 
 		this.log("reading...");
-		String read = file;
+		String read = "";
+		try{
+			read = new Scanner(new File(this.fileName)).useDelimiter("\\Z").next();
+		}catch(Exception e){
+
+		}
 		Thread.sleep(duration * 1000);
 		this.log("reading finished.");
 		this.log("Contents: \n" + read);
@@ -76,6 +85,11 @@ public class Resource {
 
 		this.log("writing...");
 		file += content + "\n";
+		try(PrintWriter out = new PrintWriter(new FileOutputStream(new File(this.fileName), true))){
+    		out.println(content);
+		}catch(Exception e){
+
+		}
 		Thread.sleep(duration * 1000);
 		this.log("writing finished.");
 

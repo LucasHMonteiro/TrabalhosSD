@@ -35,6 +35,7 @@ build: Client.java Resource.java Server.java
 clean:
 	@echo CLEANING PROJECT
 	@rm -R build
+	@rm *.txt
 
 test-parallel-write:
 	@make client fk=2 ct=content1 l=3 &
@@ -51,6 +52,5 @@ test-read-priority:
 	@sleep 6
 	@echo
 	@make client fk=1 l=18 &
-
 
 .PHONY: run start stop build clean client
