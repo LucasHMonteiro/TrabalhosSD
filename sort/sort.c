@@ -5,6 +5,7 @@
 
 /* the number of data elements in each process */
 #define N 1000
+#define ITERATIONS 50
 
 void init_list(int* list, int list_len) {
   srand(0);
@@ -32,82 +33,99 @@ int main(int argc, char** argv) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &np);
 
-  int list_len = np * N;
-  int list[list_len], sorted_list[list_len], local_list[N];
+  double totalNaiveTime = 0;
+  double totalNaive2Time = 0;
+  double totalPoetTime = 0;
 
-  init_list(list, list_len);
+  for (int i = 0; i < ITERATIONS; i++) {
+    int list_len = np * N;
+    int list[list_len], sorted_list[list_len], local_list[N];
 
-  // if (rank == 0) {
-  //   printf("List to sort: ");
-  //   print_list(list, list_len);
-  // }
+    init_list(list, list_len);
 
-  MPI_Barrier(MPI_COMM_WORLD);
+    // if (rank == 0) {
+    //   printf("List to sort: ");
+    //   print_list(list, list_len);
+    // }
 
-  // BEGIN NAIVE
+    MPI_Barrier(MPI_COMM_WORLD);
 
-  if (rank == 0) {
-    printf("Naive Parallel Sort:\n");
-    t1 = MPI_Wtime();
+    // BEGIN NAIVE
+
+    if (rank == 0) {
+      // printf("Naive Parallel Sort:\n");
+      t1 = MPI_Wtime();
+    }
+
+    naive_sort(list, list_len, rank, np, sorted_list);
+
+    if (rank == 0) {
+      t2 = MPI_Wtime();
+      // printf("Result: ");
+      // print_list(sorted_list, list_len);
+      // printf("Elapsed time is %f\n", t2 - t1);
+      // printf("\n");
+      totalNaiveTime += t2 - t1;
+    }
+
+    // END NAIVE
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // BEGIN NAIVE 2
+
+    memcpy(local_list, &list[rank * N], N * sizeof(int));
+
+    if (rank == 0) {
+      // printf("Naive 2 Parallel Sort:\n");
+      t1 = MPI_Wtime();
+    }
+
+    naive_sort2(local_list, rank, np, sorted_list);
+    
+    if (rank == 0) {
+      t2 = MPI_Wtime();
+      // printf("Result: ");
+      // print_list(sorted_list, list_len);
+      // printf("Elapsed time is %f\n", t2 - t1);
+      // printf("\n");
+      totalNaive2Time += t2 - t1;
+    }
+
+    // END NAIVE 2
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // BEGIN POET
+
+    memcpy(local_list, &list[rank * N], N * sizeof(int));
+
+    if (rank == 0) {
+      // printf("POET Parallel Sort:\n");
+      t1 = MPI_Wtime();
+    }
+
+    poet_sort(local_list, rank, np, sorted_list);
+    
+    if (rank == 0) {
+      t2 = MPI_Wtime();
+      // printf("Result: ");
+      // print_list(sorted_list, list_len);
+      // printf("Elapsed time is %f\n", t2 - t1);
+      // printf("\n");
+      totalPoetTime += t2 - t1;
+    }
+
+    // END POET
   }
 
-  naive_sort(list, list_len, rank, np, sorted_list);
-
   if (rank == 0) {
-    t2 = MPI_Wtime();
-    // printf("Result: ");
-    // print_list(sorted_list, list_len);
-    printf("Elapsed time is %f\n", t2 - t1);
+    printf("\n");
+    printf("Mean naive time: %f\n", totalNaiveTime/ITERATIONS);
+    printf("Mean naive2 time: %f\n", totalNaive2Time/ITERATIONS);
+    printf("Mean poet time: %f\n", totalPoetTime/ITERATIONS);
     printf("\n");
   }
-
-  // END NAIVE
-
-  MPI_Barrier(MPI_COMM_WORLD);
-
-  // BEGIN NAIVE 2
-
-  memcpy(local_list, &list[rank * N], N * sizeof(int));
-
-  if (rank == 0) {
-    printf("Naive 2 Parallel Sort:\n");
-    t1 = MPI_Wtime();
-  }
-
-  naive_sort2(local_list, rank, np, sorted_list);
-  
-  if (rank == 0) {
-    t2 = MPI_Wtime();
-    // printf("Result: ");
-    // print_list(sorted_list, list_len);
-    printf("Elapsed time is %f\n", t2 - t1);
-    printf("\n");
-  }
-
-  // END NAIVE 2
-
-  MPI_Barrier(MPI_COMM_WORLD);
-
-  // BEGIN POET
-
-  memcpy(local_list, &list[rank * N], N * sizeof(int));
-
-  if (rank == 0) {
-    printf("POET Parallel Sort:\n");
-    t1 = MPI_Wtime();
-  }
-
-  poet_sort(local_list, rank, np, sorted_list);
-  
-  if (rank == 0) {
-    t2 = MPI_Wtime();
-    // printf("Result: ");
-    // print_list(sorted_list, list_len);
-    printf("Elapsed time is %f\n", t2 - t1);
-    printf("\n");
-  }
-
-  // END POET
 
   MPI_Finalize();
 
